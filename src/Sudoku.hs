@@ -21,8 +21,11 @@ windowOffsetTop = 70
 borderThickness :: Float
 borderThickness = 3
 
-tableSide::Float
+tableSide ::Float
 tableSide = 549
+
+initPos :: (Float, Float)
+initPos = (-242, 242)
 
 
 data Image = Image {pic :: Picture, val :: Int}
@@ -91,9 +94,17 @@ generateBorders = pictures [ -- thick vertical borders
                            , translate 0 (-212) $ color black $ rectangleSolid tableSide 1
                            ]
 
---TODO
+indexToCoord1 :: (Float, Float) -> (Int, Int) -> (Int, Int) -> (Float, Float)
+indexToCoord1 (x,y) (i,j) (cur_i, cur_j) | cur_i /= i = indexToCoord1 (x, y-(59+(offset cur_i))) (i,j) (cur_i+1, cur_j)
+                                         | cur_j /= j = indexToCoord1 (x+59+(offset cur_j), y)   (i,j) (cur_i, cur_j+1)
+                                         | otherwise = (x,y)
+                                         where offset idx | idx `rem` 3 /= 0 = 1
+                                                          | otherwise        = 3
+
 indexToCoord :: (Int, Int) -> (Float, Float)
-indexToCoord (i,j) = (0,0)
+indexToCoord idx = indexToCoord1 initPos idx startIdx
+                   where startIdx = (1,1)
+
 
 getBordersPicture :: (Float, Float) -> Picture
 getBordersPicture (x,y) = pictures [ translate x y $ color red   $ rectangleSolid 59 59
@@ -110,18 +121,24 @@ generateCell (x, y) (Just n) imgs = translate x y $ picture_of_n
                                     where picture_of_n = (pic  (head (filter checkVal imgs)))
                                                          where checkVal img = (val img) == n 
 
---TODO
 generateRow :: (Float, Float) -> [Maybe Int] -> Images -> Picture
-generateRow initPos row imgs = pictures [ generateCell initPos cell imgs | cell <- row ]
+generateRow (x,y) row imgs | row == [] = blank 
+                           | otherwise = pictures [ generateCell (x,y)           (head row) imgs
+                                                  , generateRow  (x+59+offset,y) (tail row) imgs
+                                                  ]
+                                         where offset | ((length row)-1) `rem` 3 /= 0 = 1
+                                                      | otherwise                     = 3 
 
---TODO
-generateRows :: (Float, Float) -> Sudoku -> Images -> Picture
-generateRows initPos sTable imgs = pictures [ generateRow initPos row imgs | row <- (rows sTable) ]
+generateRows :: (Float, Float) -> [[Maybe Int]] -> Images -> Picture
+generateRows (x,y) rows imgs | rows == [] = blank 
+                             | otherwise  = pictures [ generateRow   (x,y)             (head rows) imgs
+                                                     , generateRows  (x,y-(59+offset)) (tail rows) imgs
+                                                     ]
+                                            where offset | ((length rows)-1) `rem` 3 /= 0 = 1
+                                                         | otherwise                      = 3 
 
---TODO
 generateSudokuValsImages :: Window -> Picture
-generateSudokuValsImages win = generateRows initPos (sudokuTable win) (images win)
-                               where initPos = (-242, 242)
+generateSudokuValsImages win = generateRows initPos (rows (sudokuTable win)) (images win)
 
 
 renderWindow :: Window -> Picture
