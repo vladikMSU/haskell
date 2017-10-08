@@ -104,12 +104,25 @@ genBordersForSelectedCell :: Window -> Picture
 genBordersForSelectedCell win | someCellSelected win = getBordersPicture (indexToCoord (currentCellIdx win))                                 
                               | otherwise            = blank
 
+generateCell :: (Float, Float) -> Maybe Int -> Images -> Picture
+generateCell   _    Nothing   _   = blank
+generateCell (x, y) (Just n) imgs = translate x y $ picture_of_n
+                                    where picture_of_n = (pic  (head (filter checkVal imgs)))
+                                                         where checkVal img = (val img) == n 
+
+--TODO
+generateRow :: (Float, Float) -> [Maybe Int] -> Images -> Picture
+generateRow initPos row imgs = pictures [ generateCell initPos cell imgs | cell <- row ]
+
+--TODO
+generateRows :: (Float, Float) -> Sudoku -> Images -> Picture
+generateRows initPos sTable imgs = pictures [ generateRow initPos row imgs | row <- (rows sTable) ]
+
 --TODO
 generateSudokuValsImages :: Window -> Picture
-generateSudokuValsImages win = pictures [blank]
-                                      {-(map (map f) (rows (sudoku win))) (imageOne (images win))
-                                        , translate 60 0  $ pic (imageFour (images win))
-                                        , translate 122 0 $ pic (imageNine (images win))]-}
+generateSudokuValsImages win = generateRows initPos (sudokuTable win) (images win)
+                               where initPos = (-242, 242)
+
 
 renderWindow :: Window -> Picture
 renderWindow window = pictures [ generateBorders
