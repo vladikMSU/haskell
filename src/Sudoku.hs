@@ -1,7 +1,6 @@
 module Sudoku where
 
 import Data.Char
---import Data.List
 import Graphics.Gloss.Juicy
 import Graphics.Gloss.Interface.Pure.Game
 
@@ -151,10 +150,22 @@ clickedOnTable :: (Float, Float) -> Bool
 clickedOnTable (x,y) = -tableSide/2 <= x && x <= tableSide/2
                     && -tableSide/2 <= y && y <= tableSide/2
 
+inBoxWithCenter :: (Float, Float) -> (Float, Float) -> Bool
+inBoxWithCenter (center_x, center_y) (x,y) =    center_x-31 <= x && x <= center_x+31
+                                             && center_y-31 <= y && y <= center_y+31
+
 -- TODO
+coordToIndex1 :: (Float, Float) -> (Float, Float) -> (Int, Int) -> (Int, Int)
+coordToIndex1 (cur_x,cur_y) (x,y) (i,j) | inBoxWithCenter (cur_x,cur_y) (x,y) = (i,j)
+                                        | j < 9     = coordToIndex1 (cur_x+59+(offset j),  cur_y) (x,y) (i,j+1)
+                                        | otherwise = coordToIndex1 (init_x, cur_y-59-(offset i)) (x,y) (i+1,1)
+                                        where offset idx | idx `rem` 3 /= 0 = 1
+                                                         | otherwise        = 3
+                                              init_x = fst initPos
+
 coordToIndex :: (Float, Float) -> (Int, Int)
-coordToIndex (x,y) | -29 <= x && x <= 29 && -29 <= y && y <= 29 = (5,5)
-                   | otherwise                                  = (1,1)
+coordToIndex click_coords = coordToIndex1 initPos click_coords startIdx
+                            where startIdx = (1,1)
 
 processCellClicked :: Window -> (Float, Float) -> Window
 processCellClicked win click_coords
