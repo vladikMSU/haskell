@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/cmc-haskell-2017/project-template.svg?branch=master)](https://travis-ci.org/cmc-haskell-2017/project-template)
 
-Шаблон проекта для выполнения практического задания.
+Проект практического задания. Вариант - Головоломки->Судоку.
 
 ## Сборка и запуск
 
@@ -16,7 +16,7 @@ stack build
 Собрать и запустить проект можно при помощи команды
 
 ```
-stack build && stack exec my-project
+stack build && stack exec sudoku
 ```
 
 Запустить тесты можно при помощи команды
