@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/cmc-haskell-2017/project-template.svg?branch=master)](https://travis-ci.org/cmc-haskell-2017/project-template)
 
-Проект практического задания. Вариант - Головоломки -> Судоку.
+Проект практического задания. Вариант --- Головоломки -> Судоку.
 
 ## Сборка и запуск
 
