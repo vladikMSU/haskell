@@ -16,8 +16,9 @@ stack build
 Собрать и запустить проект можно при помощи команды
 
 ```
-stack build && stack exec sudoku
+stack build && stack exec sudoku <file_with_puzzle>
 ```
+В домашней директории проекта лежит файл с примером загадки - hard.sudoku
 
 Запустить тесты можно при помощи команды
 
