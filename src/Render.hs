@@ -16,16 +16,6 @@ renderWindow window = pictures [ generateTableBorders
                                , generateSudokuValsImages  window
                                ]
 
-genHintsPicture :: Window -> Picture
-genHintsPicture win | not (hintsPressed win) = blank
-                    | otherwise = pictures (map (\v -> generateHint v (images win)) (hintsForCurCell win))
-
-generateHint :: Maybe Int -> Images -> Picture
-generateHint val imgs | isNothing val = blank
-                      | otherwise = generatePictureAt (300, 300) (imagePic image_of_n)
-                                    where image_of_n = head (filter checkVal imgs)
-                                                       where checkVal img = (imageVal img) == fromJust val 
-
 generateTableBorders :: Picture
 generateTableBorders = pictures [ -- thick vertical borders
                                   translate 273    0 $ color black $ rectangleSolid borderThickness tableSide
@@ -62,6 +52,19 @@ getBordersPicture :: Color -> Float-> Picture
 getBordersPicture col thickness = pictures [ color col   $ rectangleSolid 59             59
                                            , color white $ rectangleSolid (59-thickness) (59-thickness)
                                            ]
+
+genHintsPicture :: Window -> Picture
+genHintsPicture win | not (hintsPressed win) = blank
+                    | otherwise = pictures [hints, borders] 
+                                  where hints   = pictures (map (\v -> generateHint v (images win)) (hintsForCurCell win))
+                                        borders = (generatePictureAt (indexToCoord (currentCellIdx win)) (getBordersPicture blue 7))
+
+
+generateHint :: Maybe Int -> Images -> Picture
+generateHint val imgs | isNothing val = blank
+                      | otherwise = generatePictureAt (300, 300) (imagePic image_of_n)
+                                    where image_of_n = head (filter checkVal imgs)
+                                                       where checkVal img = (imageVal img) == fromJust val
 
 genBordersForClues :: Window -> Picture
 genBordersForClues win = pictures (map f (clues (sudokuTable win)))

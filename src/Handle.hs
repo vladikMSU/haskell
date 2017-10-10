@@ -24,22 +24,29 @@ handle (EventKey (Char '8') Down _ _) window = renewCurrentCellVal (digitToInt '
 handle (EventKey (Char '9') Down _ _) window = renewCurrentCellVal (digitToInt '9') window
 handle _ window = window
 
+
+
+--------------------------------
+------PROCESS CLICKS------------
+--------------------------------
+
 processCellClicked :: Window -> Coordinates -> Window
 processCellClicked win click_coords
     | not (clickedOnTable click_coords) ||
       clickedOnClue click_coords win    ||
       someCellSelected win && coordToIndex click_coords == currentCellIdx win 
-        = win { sudokuTable      = sudokuTable win
-              , someCellSelected = False
-              , images           = images win
-              , currentCellIdx   = currentCellIdx win
+        = win { someCellSelected = False
+              , hintsPressed     = False
               }
+    | hintsPressed win && coordToIndex click_coords == currentCellIdx win
+        = processClickOnHint click_coords win
     | otherwise
-        = win { sudokuTable      = sudokuTable win
-              , someCellSelected = True
-              , images           = images win
+        = win { someCellSelected = True
               , currentCellIdx   = coordToIndex click_coords
+              , hintsPressed     = False
               }
+
+--------LOW-LEVEL-----------
 
 clickedOnTable :: Coordinates -> Bool
 clickedOnTable (x,y) = -tableSide/2 <= x && x <= tableSide/2
@@ -64,13 +71,22 @@ inBoxWithCenter :: Coordinates -> Coordinates -> Bool
 inBoxWithCenter (center_x, center_y) (x,y) =    center_x-31 <= x && x <= center_x+31
                                              && center_y-31 <= y && y <= center_y+31
 
+--------HIGH-LEVEL---------------------
+
+processClickOnHint :: Coordinates -> Window -> Window
+processClickOnHint _ win = win
+
+
+---------------------------------------------
+-------------PROCESS "H" CLICK --------------
+---------------------------------------------
 
 processGetHints :: Window -> Window
 processGetHints win | not (someCellSelected win) = win
-                    | otherwise                  = win
-                                                   { hintsForCurCell  = generateHintsList (sudokuTable win) (currentCellIdx win)
-                                                   , hintsPressed     = True
-                                                   }
+                    | hintsPressed win           = win { someCellSelected = False
+                                                       , hintsPressed     = False }
+                    | otherwise = win { hintsForCurCell  = generateHintsList (sudokuTable win) (currentCellIdx win)
+                                      , hintsPressed     = True }
 
 
 generateHintsList :: Sudoku -> Index -> [Maybe Int]
@@ -78,8 +94,8 @@ generateHintsList s (i, j) =
     map f [1 .. 9]
     where f n   | not ((elem n row) || (elem n col) || (elem n sqr)) = Just n
                 | otherwise = Nothing
-                where row = catMaybes (map cellVal (filter (\cell -> (fst (cellInd cell)) == i)                          (body s)))
-                      col = catMaybes (map cellVal (filter (\cell -> (snd (cellInd cell)) == j)                          (body s)))
+                where row = catMaybes (map cellVal (filter (\cell -> (fst (cellInd cell)) == i) (body s)))
+                      col = catMaybes (map cellVal (filter (\cell -> (snd (cellInd cell)) == j) (body s)))
                       sqr = catMaybes (map cellVal (filter (\cell -> elem (cellInd cell) (genInds (bigInd i, bigInd j))) (body s)))
                             where   bigInd ind | (ind `rem` 3) == 0 = (ind `quot` 3)
                                                | otherwise          = (ind `quot` 3) + 1
@@ -93,18 +109,18 @@ generateHintsList s (i, j) =
                                                            , ((bigI-1) * 3 + 3, (bigJ-1) * 3 + 2)
                                                            , ((bigI-1) * 3 + 3, (bigJ-1) * 3 + 3)
                                                            ]
-                                    
+
+
+------------------------------------------------
+---------PROCESS OTHER KEYBORD EVENTS-----------
+------------------------------------------------
                       
 renewCurrentCellVal :: Int -> Window -> Window
 renewCurrentCellVal value win
     | not (someCellSelected win) = win
-    | otherwise                  = win
-                                   { sudokuTable      = changeSudokuElem (sudokuTable win) (currentCellIdx win) value
-                                   , someCellSelected = False
-                                   , currentCellIdx   = currentCellIdx win
-                                   , hintsForCurCell  = hintsForCurCell win
-                                   , images           = images win
-                                   }
+    | hintsPressed win           = win
+    | otherwise = win { sudokuTable = changeSudokuElem (sudokuTable win) (currentCellIdx win) value
+                      , someCellSelected = False }
 
 changeSudokuElem :: Sudoku -> Index -> Int -> Sudoku
 changeSudokuElem s (i,j) new_val = Sudoku { body = changedBody, clues = (clues s)}
