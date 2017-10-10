@@ -11,10 +11,20 @@ import Constants
 renderWindow :: Window -> Picture
 renderWindow window = pictures [ generateTableBorders
                                , genBordersForSelectedCell window
+                               , genHintsPicture           window
                                , genBordersForClues        window
                                , generateSudokuValsImages  window
                                ]
 
+genHintsPicture :: Window -> Picture
+genHintsPicture win | not (hintsPressed win) = blank
+                    | otherwise = pictures (map (\v -> generateHint v (images win)) (hintsForCurCell win))
+
+generateHint :: Maybe Int -> Images -> Picture
+generateHint val imgs | isNothing val = blank
+                      | otherwise = generatePictureAt (300, 300) (imagePic image_of_n)
+                                    where image_of_n = head (filter checkVal imgs)
+                                                       where checkVal img = (imageVal img) == fromJust val 
 
 generateTableBorders :: Picture
 generateTableBorders = pictures [ -- thick vertical borders

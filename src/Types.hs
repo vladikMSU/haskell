@@ -19,5 +19,6 @@ data Window = Window
     , someCellSelected :: Bool
     , currentCellIdx   :: Index
     , hintsForCurCell  :: [Maybe Int]
+    , hintsPressed     :: Bool
     , images           :: Images
     }

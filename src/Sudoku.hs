@@ -28,6 +28,7 @@ generateWindow path = do
         , someCellSelected = False
         , currentCellIdx   = (0, 0)
         , hintsForCurCell  = []
+        , hintsPressed     = False
         , images           = imgs
         }
 
