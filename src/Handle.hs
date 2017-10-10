@@ -68,11 +68,8 @@ inBoxWithCenter (center_x, center_y) (x,y) =    center_x-31 <= x && x <= center_
 processGetHints :: Window -> Window
 processGetHints win | not (someCellSelected win) = win
                     | otherwise                  = win
-                                                   { sudokuTable      = (sudokuTable win)
-                                                   , someCellSelected = (someCellSelected win)
-                                                   , currentCellIdx   = (currentCellIdx win)
-                                                   , hintsForCurCell  = generateHintsList (sudokuTable win) (currentCellIdx win)
-                                                   , images           = (images win)
+                                                   { hintsForCurCell  = generateHintsList (sudokuTable win) (currentCellIdx win)
+                                                   , hintsPressed     = True
                                                    }
 
 
@@ -81,9 +78,9 @@ generateHintsList s (i, j) =
     map f [1 .. 9]
     where f n   | not ((elem n row) && (elem n col) && (elem n sqr)) = Just n
                 | otherwise = Nothing
-                where row = map (fromJust . cellVal) (filter (\cell -> (fst (cellInd cell)) == i) (body s))
-                      col = map (fromJust . cellVal) (filter (\cell -> (snd (cellInd cell)) == j) (body s))
-                      sqr = map (fromJust . cellVal) (filter (\cell -> elem (cellInd cell) (genInds (bigInd i, bigInd j))) (body s))
+                where row = catMaybes (map cellVal (filter (\cell -> (fst (cellInd cell)) == i) (body s)))
+                      col = catMaybes (map cellVal (filter (\cell -> (snd (cellInd cell)) == j) (body s)))
+                      sqr = catMaybes (map cellVal (filter (\cell -> elem (cellInd cell) (genInds (bigInd i, bigInd j))) (body s)))
                             where   bigInd ind | (ind `rem` 3) == 0 = (ind `quot` 3)
                                                | otherwise          = (ind `quot` 3) + 1
                                     genInds (bigI, bigJ) = [ ((bigI-1) * 3,     (bigJ-1) * 3    )
