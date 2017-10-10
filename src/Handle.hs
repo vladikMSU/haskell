@@ -74,11 +74,16 @@ inBoxWithCenter (center_x, center_y) (x,y) =    center_x-31 <= x && x <= center_
 --------HIGH-LEVEL---------------------
 
 processClickOnHint :: Coordinates -> Window -> Window
-processClickOnHint _ win = win
+processClickOnHint click_coords win = processClickOnHint1 click_coords 1 win
 
+processClickOnHint1 :: Coordinates -> Int -> Window -> Window
+processClickOnHint1 _ _ win = win
 
+inSmallBoxWithCenter :: Coordinates -> Coordinates -> Bool
+inSmallBoxWithCenter (center_x, center_y) (x,y) =    center_x-31 <= x && x <= center_x+31
+                                                  && center_y-31 <= y && y <= center_y+31
 ---------------------------------------------
--------------PROCESS "H" CLICK --------------
+-------------PROCESS "H" PRESS --------------
 ---------------------------------------------
 
 processGetHints :: Window -> Window
