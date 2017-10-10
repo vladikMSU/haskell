@@ -76,22 +76,22 @@ processGetHints win | not (someCellSelected win) = win
 generateHintsList :: Sudoku -> Index -> [Maybe Int]
 generateHintsList s (i, j) =
     map f [1 .. 9]
-    where f n   | not ((elem n row) && (elem n col) && (elem n sqr)) = Just n
+    where f n   | not ((elem n row) || (elem n col) || (elem n sqr)) = Just n
                 | otherwise = Nothing
-                where row = catMaybes (map cellVal (filter (\cell -> (fst (cellInd cell)) == i) (body s)))
-                      col = catMaybes (map cellVal (filter (\cell -> (snd (cellInd cell)) == j) (body s)))
+                where row = catMaybes (map cellVal (filter (\cell -> (fst (cellInd cell)) == i)                          (body s)))
+                      col = catMaybes (map cellVal (filter (\cell -> (snd (cellInd cell)) == j)                          (body s)))
                       sqr = catMaybes (map cellVal (filter (\cell -> elem (cellInd cell) (genInds (bigInd i, bigInd j))) (body s)))
                             where   bigInd ind | (ind `rem` 3) == 0 = (ind `quot` 3)
                                                | otherwise          = (ind `quot` 3) + 1
-                                    genInds (bigI, bigJ) = [ ((bigI-1) * 3,     (bigJ-1) * 3    )
-                                                           , ((bigI-1) * 3,     (bigJ-1) * 3 + 1)
-                                                           , ((bigI-1) * 3,     (bigJ-1) * 3 + 2)
-                                                           , ((bigI-1) * 3 + 1, (bigJ-1) * 3    )
-                                                           , ((bigI-1) * 3 + 1, (bigJ-1) * 3 + 1)
+                                    genInds (bigI, bigJ) = [ ((bigI-1) * 3 + 1, (bigJ-1) * 3 + 1)
                                                            , ((bigI-1) * 3 + 1, (bigJ-1) * 3 + 2)
-                                                           , ((bigI-1) * 3 + 2, (bigJ-1) * 3    )
+                                                           , ((bigI-1) * 3 + 1, (bigJ-1) * 3 + 3)
                                                            , ((bigI-1) * 3 + 2, (bigJ-1) * 3 + 1)
                                                            , ((bigI-1) * 3 + 2, (bigJ-1) * 3 + 2)
+                                                           , ((bigI-1) * 3 + 2, (bigJ-1) * 3 + 3)
+                                                           , ((bigI-1) * 3 + 3, (bigJ-1) * 3 + 1)
+                                                           , ((bigI-1) * 3 + 3, (bigJ-1) * 3 + 2)
+                                                           , ((bigI-1) * 3 + 3, (bigJ-1) * 3 + 3)
                                                            ]
                                     
                       
