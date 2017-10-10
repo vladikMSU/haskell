@@ -27,6 +27,7 @@ generateWindow path = do
         { sudokuTable      = sudoku
         , someCellSelected = False
         , currentCellIdx   = (0, 0)
+        , hintsForCurCell  = []
         , images           = imgs
         }
 

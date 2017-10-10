@@ -18,5 +18,6 @@ data Window = Window
     { sudokuTable      :: Sudoku
     , someCellSelected :: Bool
     , currentCellIdx   :: Index
+    , hintsForCurCell  :: [Maybe Int]
     , images           :: Images
     }
