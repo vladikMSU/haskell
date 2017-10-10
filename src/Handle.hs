@@ -2,6 +2,7 @@ module Handle where
 
 
 import Data.Char
+import Data.Maybe
 import Graphics.Gloss.Interface.Pure.Game
 
 import Types
@@ -10,6 +11,8 @@ import Constants
 
 handle :: Event -> Window -> Window
 handle (EventKey (MouseButton LeftButton) Down _ coordinates) window = processCellClicked window coordinates
+handle (EventKey (Char 'h') Down _ _) window = processGetHints window
+handle (EventKey (Char 'H') Down _ _) window = processGetHints window
 handle (EventKey (Char '1') Down _ _) window = renewCurrentCellVal (digitToInt '1') window
 handle (EventKey (Char '2') Down _ _) window = renewCurrentCellVal (digitToInt '2') window
 handle (EventKey (Char '3') Down _ _) window = renewCurrentCellVal (digitToInt '3') window
@@ -62,6 +65,39 @@ inBoxWithCenter (center_x, center_y) (x,y) =    center_x-31 <= x && x <= center_
                                              && center_y-31 <= y && y <= center_y+31
 
 
+processGetHints :: Window -> Window
+processGetHints win | not (someCellSelected win) = win
+                    | otherwise                  = win
+                                                   { sudokuTable      = (sudokuTable win)
+                                                   , someCellSelected = (someCellSelected win)
+                                                   , currentCellIdx   = (currentCellIdx win)
+                                                   , hintsForCurCell  = generateHintsList (sudokuTable win) (currentCellIdx win)
+                                                   , images           = (images win)
+                                                   }
+
+
+generateHintsList :: Sudoku -> Index -> [Maybe Int]
+generateHintsList s (i, j) =
+    map f [1 .. 9]
+    where f n   | not ((elem n row) && (elem n col) && (elem n sqr)) = Just n
+                | otherwise = Nothing
+                where row = map (fromJust . cellVal) (filter (\cell -> (fst (cellInd cell)) == i) (body s))
+                      col = map (fromJust . cellVal) (filter (\cell -> (snd (cellInd cell)) == j) (body s))
+                      sqr = map (fromJust . cellVal) (filter (\cell -> elem (cellInd cell) (genInds (bigInd i, bigInd j))) (body s))
+                            where   bigInd ind | (ind `rem` 3) == 0 = (ind `quot` 3)
+                                               | otherwise          = (ind `quot` 3) + 1
+                                    genInds (bigI, bigJ) = [ ((bigI-1) * 3,     (bigJ-1) * 3    )
+                                                           , ((bigI-1) * 3,     (bigJ-1) * 3 + 1)
+                                                           , ((bigI-1) * 3,     (bigJ-1) * 3 + 2)
+                                                           , ((bigI-1) * 3 + 1, (bigJ-1) * 3    )
+                                                           , ((bigI-1) * 3 + 1, (bigJ-1) * 3 + 1)
+                                                           , ((bigI-1) * 3 + 1, (bigJ-1) * 3 + 2)
+                                                           , ((bigI-1) * 3 + 2, (bigJ-1) * 3    )
+                                                           , ((bigI-1) * 3 + 2, (bigJ-1) * 3 + 1)
+                                                           , ((bigI-1) * 3 + 2, (bigJ-1) * 3 + 2)
+                                                           ]
+                                    
+                      
 renewCurrentCellVal :: Int -> Window -> Window
 renewCurrentCellVal value win
     | not (someCellSelected win) = win
@@ -69,6 +105,7 @@ renewCurrentCellVal value win
                                    { sudokuTable      = changeSudokuElem (sudokuTable win) (currentCellIdx win) value
                                    , someCellSelected = False
                                    , currentCellIdx   = currentCellIdx win
+                                   , hintsForCurCell  = hintsForCurCell win
                                    , images           = images win
                                    }
 
